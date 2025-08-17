@@ -1,0 +1,15 @@
+name: dqn_routing
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+      - tensorflow>=2.15,<3
+      - numpy
+      - matplotlib
+      - networkx
+      - gym==0.26.2
+      - pygame
+      - keras>=2.15
+      - scikit-learn

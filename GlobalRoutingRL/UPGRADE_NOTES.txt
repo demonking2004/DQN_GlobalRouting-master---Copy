@@ -1,0 +1,40 @@
+UPGRADE NOTES (August 17, 2025)
+
+What I changed to upgrade for modern Python & TensorFlow while preserving behavior:
+
+1) TensorFlow 1.x -> TensorFlow 2.x (compat mode)
+   - Switched code to use `tensorflow.compat.v1` APIs and disabled eager execution:
+       `tf.compat.v1.disable_eager_execution()`
+   - Replaced:
+       * tf.set_random_seed -> tf.compat.v1.set_random_seed
+       * tf.placeholder      -> tf.compat.v1.placeholder
+       * tf.variable_scope   -> tf.compat.v1.variable_scope
+       * tf.layers.*         -> tf.compat.v1.layers.*
+       * tf.Session          -> tf.compat.v1.Session
+       * tf.ConfigProto      -> tf.compat.v1.ConfigProto
+       * tf.GPUOptions       -> tf.compat.v1.GPUOptions
+       * tf.reset_default_graph() -> tf.compat.v1.reset_default_graph()
+   - Keras backend session:
+       keras.backend.tensorflow_backend.set_session(sess)
+       -> tf.compat.v1.keras.backend.set_session(sess)
+
+2) Keras import
+   - `import keras` -> `from tensorflow import keras` to tie Keras to TF 2.x.
+
+3) Matplotlib backend
+   - `TkAgg` -> `Agg` (headless-safe), prevents backend errors on servers/CI.
+
+4) Environment
+   - Replaced `environment.yml` with Python 3.11 + modern libs and TF 2.15+:
+       python=3.11, numpy>=1.26, scipy>=1.11, pandas>=2.1, pillow>=10, matplotlib>=3.8,
+       pip: tensorflow>=2.15, keras>=2.15
+   - Removed legacy `basemap` which is often incompatible with modern stacks and
+     not used in this project.
+
+5) Random seeds
+   - Preserved the same seeds (NumPy, TF, random) so output/stochastic behavior
+     remains consistent given the same environment and hardware.
+
+If you need strict bitwise-identical results, ensure you run on CPU, set the same
+TF/CUDA/BLAS versions, and avoid nondeterministic GPU kernels. Otherwise, numerical
+results should match up to tiny floating-point noise.

@@ -1,0 +1,15 @@
+name: DRL_GR_py311
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy>=1.26
+  - scipy>=1.11
+  - pandas>=2.1
+  - pillow>=10
+  - matplotlib>=3.8
+  - pip:
+      - tensorflow>=2.15
+      - keras>=2.15
