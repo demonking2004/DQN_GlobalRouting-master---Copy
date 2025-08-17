@@ -167,3 +167,4 @@ if __name__ == '__main__':
 
     halfParameterList = VisualGraph(gridParameters(grid_info)).bounding_length()
     print(halfParameterList)
+plt.tight_layout()

@@ -246,3 +246,4 @@ if __name__ == "__main__":
     # plt.xlim([-1, gridParameters['gridSize'][0]])
     # plt.ylim([-1, gridParameters['gridSize'][1]])
     plt.show()
+plt.tight_layout()

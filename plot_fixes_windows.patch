@@ -1,0 +1,308 @@
+--- a/GlobalRoutingRL/GridGraphVisualization.py
++++ b/GlobalRoutingRL/GridGraphVisualization.py
+@@ -196,4 +196,5 @@
+ 
+
+     # GridGraph(gridParameters(grid_info)).show_grid()
+
+     GridGraph(gridParameters(grid_info)).pin_density_plot()
+
+-    GridGraph(gridParameters(grid_info)).kdTree()
++    GridGraph(gridParameters(grid_info)).kdTree()
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/Initializer.py
++++ b/GlobalRoutingRL/Initializer.py
+@@ -166,4 +166,5 @@
+     # VisualGraph(gridParameters(grid_info)).pin_density_plot()
+
+ 
+
+     halfParameterList = VisualGraph(gridParameters(grid_info)).bounding_length()
+
+-    print(halfParameterList)
++    print(halfParameterList)
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/RewardPlot.py
++++ b/GlobalRoutingRL/RewardPlot.py
+@@ -1,46 +1,46 @@
+-import matplotlib
+
+-#matplotlib.use('Agg')
+
+-import matplotlib.pyplot as plt
+
+-import numpy as np
+
+-
+
+-NUM_POINTS = 300.0
+
+-
+
+-def plot(prefix, rewards):
+
+-    x_gap = len(rewards) / NUM_POINTS
+
+-    x_vals = np.arange(0, len(rewards), x_gap).astype(int)
+
+-    rewards = np.array(rewards)
+
+-
+
+-    for name, axis_label, func in \
+
+-        [('sum', 'Reward Sum (to date)', points_sum), \
+
+-         ('avg', 'Reward Average (next 100)', points_avg)]:
+
+-        y_vals = func(rewards, x_vals)
+
+-        for logscale in [True, False]:
+
+-            if logscale:
+
+-                plt.yscale('log')
+
+-            plt.plot(x_vals+1, y_vals)
+
+-            plt.xlabel('Loops')
+
+-            plt.ylabel(axis_label)
+
+-            plt.grid(which='Both')
+
+-            plt.tight_layout()
+
+-            plt.savefig(prefix + '_' + name + '_' + ('log' if logscale else 'lin') + '4by4simple.png')
+
+-            plt.close()
+
+-
+
+-def points_sum(rewards, x_vals):
+
+-    return np.array([np.sum(rewards[0:val]) for val in x_vals])
+
+-
+
+-def points_avg(rewards, x_vals):
+
+-    return np.array([np.sum(rewards[val:min(len(rewards), val+100)]) \
+
+-                     /float(min(len(rewards)-val, 100)) for val in x_vals])
+
+-
+
+-
+
+-
+
+-if __name__ == '__main__':
+
+-    name = '4by4simple.gr.rewardDataBatch32LR1e-4M32_64_32.npy'
+
+-    # file_name = '../{}data/training_log.npz'.format(name)
+
+-    data = np.load(name)
+
+-    # reward_log = data['train_reward']
+
+-    
+
+-    plot('Reward plot',data)
+
+-#    n = data.shape[0]
+
+-#    plt.plot(data,'b-')
+
+-#    plt.show()
+
++import matplotlib
+
++#matplotlib.use('Agg')
+
++import matplotlib.pyplot as plt
+
++import numpy as np
+
++
+
++NUM_POINTS = 300.0
+
++
+
++def plot(prefix, rewards):
+
++    x_gap = len(rewards) / NUM_POINTS
+
++    x_vals = np.arange(0, len(rewards), x_gap).astype(int)
+
++    rewards = np.array(rewards)
+
++
+
++    for name, axis_label, func in \
+
++        [('sum', 'Reward Sum (to date)', points_sum), \
+
++         ('avg', 'Reward Average (next 100)', points_avg)]:
+
++        y_vals = func(rewards, x_vals)
+
++        for logscale in [True, False]:
+
++            if logscale:
+
++                plt.yscale('log')
+
++            plt.plot(x_vals+1, y_vals)
+
++            plt.xlabel('Loops')
+
++            plt.ylabel(axis_label)
+
++            plt.grid(which='Both')
+
++            plt.tight_layout()
+
++            plt.savefig(prefix + '_' + name + '_' + ('log' if logscale else 'lin') + '4by4simple.png')
+
++            plt.close()
+
++
+
++def points_sum(rewards, x_vals):
+
++    return np.array([np.sum(rewards[0:val]) for val in x_vals])
+
++
+
++def points_avg(rewards, x_vals):
+
++    return np.array([np.sum(rewards[val:min(len(rewards), val+100)]) \
+
++                     /float(min(len(rewards)-val, 100)) for val in x_vals])
+
++
+
++
+
++
+
++if __name__ == '__main__':
+
++    name = '4by4simple.gr.rewardDataBatch32LR1e-4M32_64_32.npy'
+
++    # file_name = '../{}data/training_log.npz'.format(name)
+
++    data = np.load(name)
+
++    # reward_log = data['train_reward']
+
++    
+
++    plot('Reward plot',data)
+
++#    n = data.shape[0]
+
++#    plt.plot(data,'b-')
+
++#    plt.show()
+
+--- a/GlobalRoutingRL/Router.py
++++ b/GlobalRoutingRL/Router.py
+@@ -355,3 +355,5 @@
+ 
+
+ if __name__ == "__main__":
+
+     main()
+
++
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/TwoPinRouterASearch.py
++++ b/GlobalRoutingRL/TwoPinRouterASearch.py
+@@ -245,4 +245,5 @@
+     # plt.legend()
+
+     # plt.xlim([-1, gridParameters['gridSize'][0]])
+
+     # plt.ylim([-1, gridParameters['gridSize'][1]])
+
+-    plt.show()
++    plt.show()
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/BenchmarkGenerator/BenchmarkGenerator.py
++++ b/GlobalRoutingRL/BenchmarkGenerator/BenchmarkGenerator.py
+@@ -491,3 +491,5 @@
+ 
+
+ 
+
+ 
+
++
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/BenchmarkGenerator/Initializer.py
++++ b/GlobalRoutingRL/BenchmarkGenerator/Initializer.py
+@@ -164,4 +164,5 @@
+     # VisualGraph(gridParameters(grid_info)).pin_density_plot()
+
+ 
+
+     halfParameterList = VisualGraph(gridParameters(grid_info)).bounding_length()
+
+-    print(halfParameterList)
++    print(halfParameterList)
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/BenchmarkGenerator/Router.py
++++ b/GlobalRoutingRL/BenchmarkGenerator/Router.py
+@@ -251,3 +251,5 @@
+                 f.write(value)
+
+         f.write('!\n')
+
+     f.close()
+
++
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/BenchmarkGenerator/TwoPinRouterASearch.py
++++ b/GlobalRoutingRL/BenchmarkGenerator/TwoPinRouterASearch.py
+@@ -245,4 +245,5 @@
+     # plt.legend()
+
+     # plt.xlim([-1, gridParameters['gridSize'][0]])
+
+     # plt.ylim([-1, gridParameters['gridSize'][1]])
+
+-    plt.show()
++    plt.show()
+
++plt.tight_layout()
+
+--- a/GlobalRoutingRL/eval/VisualizeResults.py
++++ b/GlobalRoutingRL/eval/VisualizeResults.py
+@@ -116,3 +116,5 @@
+ 
+
+ 
+
+ 
+
++
+
++plt.tight_layout()

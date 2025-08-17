@@ -4,6 +4,7 @@ import random
 import argparse
 import sys
 from collections import deque
+import csv
 
 
 # ----------------------------
@@ -113,25 +114,34 @@ class DQN_Agent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-    def train(self, episodes=100):
-        for e in range(episodes):
-            state = np.random.rand(self.qNetwork.nObservation)  # dummy state
-            done = False
-            total_reward = 0
+    def train(self, episodes=100, log_file="report.csv"):
+        # Open CSV file and write header
+        with open(log_file, mode="w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Episode", "Reward", "Epsilon"])
 
-            while not done:
-                action = self.act(state)
-                next_state = np.random.rand(self.qNetwork.nObservation)  # dummy next_state
-                reward = np.random.choice([1, -1])  # dummy reward
-                done = np.random.rand() < 0.1
+            for e in range(episodes):
+                state = np.random.rand(self.qNetwork.nObservation)  # dummy state
+                done = False
+                total_reward = 0
 
-                self.memory.add(state, action, reward, next_state, done)
-                state = next_state
-                total_reward += reward
-                self.train_step()
+                while not done:
+                    action = self.act(state)
+                    next_state = np.random.rand(self.qNetwork.nObservation)  # dummy next_state
+                    reward = np.random.choice([1, -1])  # dummy reward
+                    done = np.random.rand() < 0.1
 
-            self.update_target()
-            print(f"Episode {e+1}/{episodes}, reward: {total_reward}")
+                    self.memory.add(state, action, reward, next_state, done)
+                    state = next_state
+                    total_reward += reward
+                    self.train_step()
+
+                self.update_target()
+
+                # Write results to CSV
+                writer.writerow([e + 1, total_reward, self.epsilon])
+
+                print(f"Episode {e+1}/{episodes}, reward: {total_reward}")
 
     def test(self, episodes=10):
         rewards = []

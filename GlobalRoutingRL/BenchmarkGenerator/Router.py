@@ -251,3 +251,5 @@ if __name__ == "__main__":
                 f.write(value)
         f.write('!\n')
     f.close()
+
+plt.tight_layout()

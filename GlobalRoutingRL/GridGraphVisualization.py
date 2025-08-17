@@ -197,3 +197,4 @@ if __name__ == '__main__':
     # GridGraph(gridParameters(grid_info)).show_grid()
     GridGraph(gridParameters(grid_info)).pin_density_plot()
     GridGraph(gridParameters(grid_info)).kdTree()
+plt.tight_layout()
