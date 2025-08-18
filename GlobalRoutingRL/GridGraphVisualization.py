@@ -104,16 +104,59 @@ class Router(object):
         return
 
 def read(grfile):
-    file = open(grfile,'r')
+    with open(grfile, 'r') as f:
+        lines = f.readlines()
+
     grid_info = {}
-    i = 0
-    for line in file:
-        if not line.strip():
-            continue
-        else:
-            grid_info[i]= line.split()
-        i += 1
-    file.close()
+    nets = []
+    line_idx = 0
+
+    # --- grid size ---
+    if lines[line_idx].startswith("grid"):
+        parts = lines[line_idx].strip().split()
+        if len(parts) == 3:   # 2D format: "grid X Y"
+            grid_info['x'] = int(parts[1])
+            grid_info['y'] = int(parts[2])
+            grid_info['z'] = 1   # force 2D
+        elif len(parts) == 4: # 3D format: "grid X Y Z"
+            grid_info['x'] = int(parts[1])
+            grid_info['y'] = int(parts[2])
+            grid_info['z'] = int(parts[3])
+        line_idx += 1
+
+    # --- capacities ---
+    while not lines[line_idx].startswith("num net"):
+        parts = lines[line_idx].strip().split()
+        if parts[0] == "vertical":
+            grid_info['vertical_capacity'] = int(parts[2])
+        elif parts[0] == "horizontal":
+            grid_info['horizontal_capacity'] = int(parts[2])
+        elif parts[0] == "via":
+            grid_info['via_capacity'] = int(parts[2])
+        line_idx += 1
+
+    # --- nets ---
+    num_net = int(lines[line_idx].split()[2])
+    grid_info['num_net'] = num_net
+    line_idx += 1
+
+    for _ in range(num_net):
+        header = lines[line_idx].strip().split()
+        net_name = header[1]
+        num_pins = int(header[2])
+        line_idx += 1
+        pins = []
+        for _ in range(num_pins):
+            coords = list(map(int, lines[line_idx].strip().split()))
+            # Handle both 2D (x y) and 3D (x y z)
+            if len(coords) == 2:
+                pins.append((coords[0], coords[1], 0))
+            elif len(coords) == 3:
+                pins.append((coords[0], coords[1], coords[2]))
+            line_idx += 1
+        nets.append((net_name, pins))
+
+    grid_info['nets'] = nets
     return grid_info
 
 # Parsing input data
