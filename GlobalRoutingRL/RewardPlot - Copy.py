@@ -36,7 +36,7 @@ def points_avg(rewards, x_vals):
         for val in x_vals
     ])
 
-def load_rewards_from_csv(csv_file="report.csv"):
+def load_rewards_from_csv(csv_file="C:\Personal\Machine Learning\DQN_GlobalRouting-master - Copy\GlobalRoutingRL\report.csv"):
     rewards = []
     if os.path.exists(csv_file):
         with open(csv_file, "r") as f:

@@ -209,7 +209,7 @@ def main(argv):
     parser.add_argument("--train", type=int, default=1)
     parser.add_argument("--test", type=int, default=0)
     parser.add_argument("--episodes", type=int, default=100)
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(argv[0:])
 
     environment_name = "grid"
     gridgraph = GridGraph
