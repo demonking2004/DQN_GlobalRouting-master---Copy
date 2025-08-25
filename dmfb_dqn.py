@@ -325,27 +325,48 @@ def eval_greedy(env, agent, episodes=100, max_steps=1000, seed=0):
     return 100.0 * successes / episodes, float(np.mean(path_lengths))
 
 def draw_path_example(env, agent, save_path, max_steps=500, seed=0):
+    # Reset environment and collect trajectory
     env.reset()
     traj = [env.pos]
-    for t in range(max_steps):
+    for _ in range(max_steps):
         with torch.no_grad():
             s = env.obs()
             a = int(agent.q(torch.from_numpy(s).unsqueeze(0).to(DEVICE)).argmax(dim=1).item())
         _, _, done, _ = env.step(a)
         traj.append(env.pos)
-        if done: break
+        if done:
+            break
+
     H, W = env.H, env.W
-    grid = np.zeros((H, W), dtype=np.int32)
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+    ax.set_xlim(-0.5, W - 0.5)
+    ax.set_ylim(H - 0.5, -0.5)
+    ax.set_xticks(np.arange(-0.5, W, 1))
+    ax.set_yticks(np.arange(-0.5, H, 1))
+    ax.grid(color="black", linestyle="-", linewidth=0.6)  # darker grid lines
+
+    # Draw obstacles as black squares
     for (r, c) in env.obstacle_cells:
-        grid[r, c] = -1
-    plt.figure(figsize=(4,4))
-    plt.imshow(grid, origin='upper')
-    ys = [p[0] for p in traj]; xs = [p[1] for p in traj]
-    plt.plot(xs, ys, linewidth=2)
-    plt.scatter(env.source[1], env.source[0], s=60, marker='o')
-    plt.scatter(env.dest[1], env.dest[0], s=60, marker='X')
-    plt.title(f'Path example {H}x{W}')
-    plt.tight_layout(); plt.savefig(save_path, dpi=160); plt.close()
+        rect = plt.Rectangle((c - 0.5, r - 0.5), 1, 1, facecolor="black")
+        ax.add_patch(rect)
+
+    # Draw path
+    ys = [p[0] for p in traj]
+    xs = [p[1] for p in traj]
+    ax.plot(xs, ys, color="blue", linewidth=2)
+
+    # Draw start and goal
+    ax.scatter(env.source[1], env.source[0], s=80, c="red", marker='o')
+    ax.scatter(env.dest[1], env.dest[0], s=80, c="green", marker='o')
+
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_facecolor("white")  # white background
+    ax.set_title(f'Path example {H}x{W}')
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=160)
+    plt.close()
 
 def train_and_eval_case(H, W, num_obstacles, k_mixers, trial_id, results_dir, seed_base=123):
     # Build env + agent
@@ -412,11 +433,14 @@ def main():
                 H, W, num_obs, k_mixers, trial_id=trial, results_dir=results_dir
             )
             stats.append((sr, apl, curve_img, path_img))
+
         srs = [x[0] for x in stats]
         apls = [x[1] for x in stats]
         sr_max, sr_min, sr_avg = max(srs), min(srs), sum(srs)/len(srs)
         apl_avg = sum(apls)/len(apls)
+
         print(f"[{case_id}] success% max={sr_max:.1f}, min={sr_min:.1f}, avg={sr_avg:.1f}; avg path={apl_avg:.1f}")
+
         rows.append({
             "case": case_id,
             "chip": f"{H}x{W}",
@@ -428,30 +452,76 @@ def main():
             "avg_path": f"{apl_avg:.1f}"
         })
 
-    # CSV
+    # --- CSV output ---
     with open(csv_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["case","chip","mixers","n_obstacles","succ_max","succ_min","succ_avg","avg_path"])
+        writer = csv.DictWriter(f, fieldnames=[
+            "case","chip","mixers","n_obstacles","succ_max","succ_min","succ_avg","avg_path"
+        ])
         writer.writeheader()
-        for r in rows: writer.writerow(r)
+        for r in rows:
+            writer.writerow(r)
 
-    # LaTeX table
+    # --- Grouped LaTeX table (matches your pasted format) ---
     with open(tex_path, "w") as f:
         f.write("\\begin{table}[t]\n")
-        f.write("    \\caption{Result of our DQN method before wire-routing (two trials per case).}\n")
-        f.write("    \\label{tab:results-dqn}\n")
-        f.write("    \\centering\n")
-        f.write("    \\begin{tabular}{c|c|c|c|c|c|c|c}\n")
-        f.write("    \\hline\n")
-        f.write("    \\multirow{2}{*}{\\textit{Case}} & \\textit{Chip} & \\#\\textit{ongoing} & \\multirow{2}{*}{\\textit{\\#obs}} & \\multicolumn{3}{c|}{Success Rate} & Avg. path\\\\\\cline{5-7}\n")
-        f.write("     & \\textit{size} & \\textit{mixers} & & max & min & avg & length\\\\\n")
-        f.write("    \\hline\n")
+        f.write("\\centering\n")
+        f.write("\\caption{Result of our DQN method before wire-routing (two trials per case).}\n")
+        f.write("\\label{tab:results-dqn}\n")
+        f.write("\\begin{tabular}{c|c|c|c|c|c|c|c}\n")
+        f.write("\\hline\n")
+        f.write("\\multirow{2}{*}{\\textit{Case}} & \\textit{Chip} & \\#\\textit{ongoing} & "
+                "\\multirow{2}{*}{\\textit{\\#obs}} & \\multicolumn{3}{c|}{Success Rate} & Avg. path\\\\\\cline{5-7}\n")
+        f.write(" & \\textit{size} & \\textit{mixers} & & max & min & avg & length\\\\\n")
+        f.write("\\hline\n")
+
+        # Group rows by chip and mixers
+        chips = {}
         for r in rows:
-            f.write(f"    {r['case']} & {r['chip']} & {r['mixers']} & {r['n_obstacles']} & {r['succ_max']} & {r['succ_min']} & {r['succ_avg']} & {r['avg_path']}\\\\\n")
-        f.write("    \\hline\n")
-        f.write("    \\end{tabular}\n")
+            chips.setdefault(r["chip"], {}).setdefault(r["mixers"], []).append(r)
+
+        for chip, mixer_dict in chips.items():
+            chip_cases = sum(len(v) for v in mixer_dict.values())
+            first_chip_row = True
+            mixer_items = list(mixer_dict.items())
+
+            for m_idx, (mixers, case_list) in enumerate(mixer_items):
+                mixer_cases = len(case_list)
+                first_mixer_row = True
+
+                for c_idx, r in enumerate(case_list):
+                    # case id
+                    f.write(f"{r['case']}")
+
+                    # chip size multirow
+                    if first_chip_row:
+                        f.write(f" & \\multirow{{{chip_cases}}}{{*}}{{{chip.replace('x', '$\\\\times$')}}}")
+                        first_chip_row = False
+                    else:
+                        f.write(" &")
+
+                    # mixers multirow
+                    if first_mixer_row:
+                        f.write(f" & \\multirow{{{mixer_cases}}}{{*}}{{{mixers}}}")
+                        first_mixer_row = False
+                    else:
+                        f.write(" &")
+
+                    # rest of columns
+                    f.write(f" & {r['n_obstacles']} & {r['succ_max']} & {r['succ_min']} & {r['succ_avg']} & {r['avg_path']}\\\\\n")
+
+                    # clines
+                    if c_idx < mixer_cases - 1:
+                        f.write("\\cline{4-8}\n")
+                    elif m_idx < len(mixer_items) - 1:
+                        f.write("\\cline{3-8}\n")
+                    else:
+                        f.write("\\hline\n")
+
+        f.write("\\end{tabular}\n")
         f.write("\\end{table}\n")
 
     print(f"\nSaved results to:\n - {csv_path}\n - {tex_path}\n - Plots in {results_dir}/")
+
 
 if __name__ == "__main__":
     main()
